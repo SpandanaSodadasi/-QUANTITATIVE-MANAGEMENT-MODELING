@@ -1,0 +1,371 @@
+---
+title: "QMM Assignment-4"
+author: "Spandana Sodadasi"
+date: "2023-10-27"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
+```
+
+##### The Hope Valley Health Care Association owns and operates six nursing homes in adjoining states. An evaluation of their efficiency has been undertaken using two inputs and two outputs. The inputs are staffing labor (measured in average hours per day) and the cost of supplies (in thousands of dollars per day). The outputs are the number of patient-days reimbursed by third-party sources and the number of patient-days reimbursed privately. 
+
+#Loading the required libraries.
+```{r}
+library(Benchmarking)
+```
+
+#Creating a data frame with the provided data.                                                                    
+1. Input Data Preparation                                                                                         
+2. x and y matrices are created to represent the inputs and outputs, respectively.                                
+3. "x" contains a two input attributes namely “Staff hours per day” and "Supplies per day", both the inputs have six rows representing six DMUs.                                                                                  
+4. "y" contains two output attributes, “Reimbursed patient-days” and “Privately paid patient-days”, both the outputs have six rows representing six DMUs.                                                                     
+5. colnames are set to provide column names for the x and y matrices.
+
+```{r}
+if (!require(knitr)) {
+library(knitr)
+} 
+```
+
+#Creating a data frame with the provided data.
+```{r}
+library(kableExtra)
+tab <- data.frame(
+  DMU = c("Facility 1", "Facility 2", "Facility 3", "Facility 4", "Facility 5", "Facility 6"),
+  Staff_hours = c(100, 300, 320, 500, 350, 340),
+  Supplies = c(0.3, 0.6, 1.2, 2, 1.4, 0.7),
+  Reimbursed_patient = c(15000, 15000, 40000, 28000, 20000, 14000),
+  Privately_paid = c(3500, 20000, 11000, 42000, 25000, 15000)
+)
+caption <- "Hope Valley Health Care Association"
+styled_table <- kable(tab, format = "html", caption = caption) %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(1, extra_css = "border-bottom: 1px dotted;")  
+styled_table
+```
+
+#Creating the input format.
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2)
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2)
+colnames(y)<-c("Reimbursed Patient-days", "Privately paid patient-days")
+colnames(x)<-c("Staff hours per day","Supplies per day")
+```
+
+##### (a) Formulate and perform DEA analysis under all DEA assumptions of CRS,IRS,DRS,VRS,FDH,FDR.
+##### (b) Determine the Peers and Lambdas under each of the above assumptions.
+
+##### CONSTANT RETURNS TO SCALE:
+
+#Calculating the returns of efficiency scores for each DMU based on the CRS assumption and storing the these scores in the variable 'e'.
+```{r}
+e <- dea(x,y,RTS = "crs")
+e
+```
+
+When we use 'dea(x, y, RTS=“crs”)', it applies the CRS assumption, implying that production scale does not influence efficiency. Each DMU is assumed to operate at an optimal scale. Consequently, the efficiency scores are not uniformly equal to one, as they may vary due to differences in the levels of input and output, which is permissible under the CRS framework.
+
+#Calculating the Peer values for the CRS assumption.
+```{r}
+peers(e)
+```
+
+Peer groups are sets of other DMUs that are considered efficient when evaluating a specific DMU. In other words, it shows which DMUs are considered benchmarks for each DMU.
+
+#Calculating the lambda values for the CRS assumption.
+```{r}
+rounded_lambda_1 <- round(lambda(e), 2)
+rounded_lambda_1 
+```
+
+The lambda values represent the degree to which a particular DMU learns from its peers. 
+
+#Plotting a graph for the CRS assumption.
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Staff_Hours_Per_Day","Suppliers_Per_Day")))
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Reimbursed_Patient_Days","Privately_paid_patient_Days")))
+dea.plot(x,y,RTS="crs",ORIENTATION="in-out",txt=rownames(x))
+```
+
+This is a convex plot which shows the six decision making units. From this plot we can derive that the line is an envelope and the inner part of the line is the studied part which includes all the decision making units in it.
+
+##### INCREASING RETURNS TO SCALE:
+
+#Calculating the returns of efficiency scores for each DMU based on the IRS assumption and storing the these scores in the variable 'e'.
+```{r}
+e <- dea(x,y,RTS = "irs")
+e
+```
+When we use 'dea(x, y, RTS=“irs”)', it applies the IRS assumption, implying that production scale does not influence efficiency. Each DMU is assumed to operate at an optimal scale. Consequently, the efficiency scores are not uniformly equal to one, as they may vary due to differences in the levels of input and output, which is permissible under the IRS framework.
+
+#Calculating the Peer values for the IRS assumption.
+```{r}
+peers(e)
+```
+
+#Calculating the lambda values for the IRS assumption.
+```{r}
+rounded_lambda_2 <- round(lambda(e), 2)
+rounded_lambda_2 
+```
+
+#Plotting a graph for the IRS assumption.
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Staff_Hours_Per_Day","Suppliers_Per_Day")))
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Reimbursed_Patient_Days","Privately_paid_patient_Days")))
+dea.plot(x,y,RTS="irs",ORIENTATION="in-out",txt=rownames(x))
+```
+
+This is a convex plot which shows the six decision making units. From this plot we can derive that the line is an envelope and the inner part of the line is the studied part which includes all the decision making units in it.
+
+##### DECREASING RETURNS TO SCALE:
+
+#Calculating the returns of efficiency scores for each DMU based on the DRS assumption and storing the these scores in the variable 'e'.
+```{r}
+e <- dea(x,y,RTS = "drs")
+e
+```
+
+When we use 'dea(x, y, RTS=“drs”)', it applies the DRS assumption, implying that production scale does not influence efficiency. Each DMU is assumed to operate at an optimal scale. Consequently, the efficiency scores are not uniformly equal to one, as they may vary due to differences in the levels of input and output, which is permissible under the DRS framework.
+
+#Calculating the Peer values for the DRS assumption.
+```{r}
+peers(e)
+```
+
+#Calculating the lambda values for the DRS assumption.
+```{r}
+rounded_lambda_3 <- round(lambda(e), 2)
+rounded_lambda_3 
+```
+
+#Plotting a graph for the DRS assumption.
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Staff_Hours_Per_Day","Suppliers_Per_Day")))
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Reimbursed_Patient_Days","Privately_paid_patient_Days")))
+dea.plot(x,y,RTS="drs",ORIENTATION="in-out",txt=rownames(x))
+```
+
+This is a convex plot which shows the six decision making units. From this plot we can derive that the line is an envelope and the inner part of the line is the studied part which includes all the decision making units in it.
+
+##### VARYING RETURNS TO SCALE:
+
+#Calculating the returns of efficiency scores for each DMU based on the VRS assumption and storing the these scores in the variable 'e'.
+```{r}
+e <- dea(x,y,RTS = "vrs")
+e
+```
+
+When we use 'dea(x, y, RTS=“vrs”)', it applies the VRS assumption, implying that production scale does not influence efficiency. Each DMU is assumed to operate at an optimal scale. Consequently, the efficiency scores are not uniformly equal to one, as they may vary due to differences in the levels of input and output, which is permissible under the VRS framework.
+
+#Calculating the Peer values for the VRS assumption.
+```{r}
+peers(e)
+```
+
+#Calculating the lambda values for the VRS assumption.
+```{r}
+rounded_lambda_4 <- round(lambda(e), 2)
+rounded_lambda_4 
+```
+
+#Plotting a graph for the VRS assumption.
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Staff_Hours_Per_Day","Suppliers_Per_Day")))
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Reimbursed_Patient_Days","Privately_paid_patient_Days")))
+dea.plot(x,y,RTS="vrs",ORIENTATION="in-out",txt=rownames(x))
+```
+
+This is a convex plot which shows the six decision making units. From this plot we can derive that the line is an envelope and the inner part of the line is the studied part which includes all the decision making units in it.
+
+##### FREE DISPOSAL HALL:
+
+#Calculating the returns of efficiency scores for each DMU based on the FDH & FRH assumption and storing the these scores in the variable 'e'. 
+```{r}
+e <- dea(x,y,RTS = "fdh")
+e
+```
+
+When we use 'dea(x, y, RTS=“fdh”)', it applies the FDH & FRH assumption, implying that production scale does not influence efficiency. Each DMU is assumed to operate at an optimal scale. Consequently, the efficiency scores are not uniformly equal to one, as they may vary due to differences in the levels of input and output, which is permissible under the FDH & FRH framework.
+
+#Calculating the Peer values for the FDH & FRH assumption.
+```{r}
+peers(e)
+```
+
+#Calculating the lambda values for the FDH & FRH assumption.
+```{r}
+rounded_lambda_5 <- round(lambda(e), 2)
+rounded_lambda_5
+```
+
+#Plotting a graph for the FDH assumption.
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Staff_Hours_Per_Day","Suppliers_Per_Day")))
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Reimbursed_Patient_Days","Privately_paid_patient_Days")))
+dea.plot(x,y,RTS="fdh",ORIENTATION="in-out",txt=rownames(x))
+```
+
+This is a convex plot which shows the six decision making units. From this plot we can derive that the line is an envelope and the inner part of the line is the studied part which includes all the decision making units in it.
+
+##### FREE REPLICABLE HALL:
+
+#Plotting a graph for the FRH assumption. 
+```{r}
+x<-matrix(c(100,300,320,500,350,340,
+            0.3,0.6,1.2,2,1.4,0.7),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Staff_Hours_Per_Day","Suppliers_Per_Day")))
+y<-matrix(c(15000, 15000, 40000, 28000, 20000, 14000,
+             3500, 20000, 11000, 42000, 25000, 15000),ncol=2,
+dimnames = list(c("A","B","C","D","E","F"), c("Reimbursed_Patient_Days","Privately_paid_patient_Days")))
+dea.plot(x,y,RTS="fdh",ORIENTATION="in-out",txt= rownames(x))
+dea.plot(x,y,RTS="add",ORIENTATION="in-out",add=TRUE,lty="dashed",lwd=2)
+```
+
+This is a convex plot which shows the six decision making units. From this plot we can derive that the line is an envelope and the inner part of the line is the studied part which includes all the decision making units in it.
+
+##### (c) Summarize your results in a tabular format.
+##### (d) Compare and contrast the above results.
+
+##### 1. Constant Returns to Scale
+```{r}
+tab <- matrix(c("DMU_1","DMU_2","DMU_3","DMU_4","DMU_5","DMU_6",
+                1.0000, 1.0000, 0.8793, 1.0000, 0.8942, 0.7048,
+                1, 2, 1, 4, 1, 1,
+                NA, NA, 4, NA, 4, 2,
+                1.00, 0.00, 2.58, 0.00, 0.26, 0.22,
+                0.00, 1.00, 0.00, 0.00, 0.00, 0.71,
+                0.00, 0.00, 0.05, 1.00, 0.57, 0.00), ncol = 6, byrow = TRUE)
+df <- data.frame(t(tab))
+colnames(df) <- c("Decision Making Units","Efficiency","CRS_Peer_1", "CRS_Peer_2", "CRS_Lambda_A", "CRS_Lambda_B", "CRS_Lambda_D")
+styled_table <- kable(df, format = "html", escape = FALSE, booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(1, extra_css = "border-bottom: 1px dotted;")
+styled_table
+```
+
+Here, we can observe that DMU 1, 2 and 4 have an efficiency of 1, which means that they have attained the maximum capacity and the DMU 3,5,6 are inefficient as they have not yet reached the maximum attainable capacity. 
+
+For DMU_5 the inefficiency is 1 - 0.8942 = 0.1058, which is almost 11%. DMU_5 can reduce this inefficiency by learning from the peers DMU_1 and DMU_4. 5' does not lie at the middle point of DMU_1 and DMU_4 so, the ratio that divides the line joining DMU_1 and DMU_4 is 4:5. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can understand that DMU_5 is close to DMU_4 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+For DMU_6 the inefficiency is 1 - 0.7048 = 0.2952, which is almost 30%. DMU_6 can reduce this inefficiency by learning from the peers DMU_1 and DMU_2. 6' does not lie at the middle point of DMU_1 and DMU_2 so, the ratio that divides the line joining DMU_1 and DMU_2 is 14:15. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can understand that DMU_6 is close to DMU_2 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+For DMU_3 the inefficiency is 1 - 0.8793 = 0.1207, which is almost 12%. DMU_3 can reduce this inefficiency by learning from the peers DMU_1 and DMU_4. 3' does not lie at the middle point of DMU_1 and DMU_4 so, the ratio that divides the line joining DMU_1 and DMU_4 is 40:11. The lambda values represent the degree to which a particular DMU learns from its peers. One thing to note over here is that when 'the value of lambda is higher than 1, the inefficient DMU would be closer to the efficient DMU and learns more than 100% efficiency from it. Therefore, from the calculated lambda values we can observe that DMU_3 is close to DMU_1 and learns more than from it and learns a little less from DMU_4 since it is farther away from it.
+
+##### 2. Increasing Returns to Scale
+```{r}
+tab <- matrix(c("DMU_1","DMU_2","DMU_3","DMU_4","DMU_5","DMU_6",
+                1.0000, 1.0000, 0.8793, 1.0000, 0.9239, 0.7273, 
+                1,2,1,4,1,1,
+                NA,NA,4,NA,4,2,
+                1.00,0.00,2.58,0.00,0.44,0.30,
+                0.0,1.0,0.0,0.0,0.0,0.7,
+                0.0,0.0,0.05,1.00,0.56,0.00), ncol = 6, byrow = TRUE)
+df <- data.frame(t(tab))
+colnames(df) <- c("Decision Making Units","Efficiency", "IRS_Peer_1", "IRS_Peer_2", "IRS_Lambda_A", "IRS_Lambda_B", "IRS_Lambda_D")
+styled_table <- kable(df, format = "html", escape = FALSE, booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(1, extra_css = "border-bottom: 1px dotted;")
+styled_table
+```
+
+Here, we can observe that DMU 1, 2 and 4 have an efficiency of 1, which means that they have attained the maximum capacity and the DMU 3,5,6 are inefficient as they have not yet reached the maximum attainable capacity. 
+
+For DMU_5 the inefficiency is 1 - 0.9239 = 0.0761, which is almost 8%. DMU_5 can reduce this inefficiency by learning from the peers DMU_1 and DMU_4. 5' does not lie at the middle point of DMU_1 and DMU_4 so, the ratio that divides the line joining DMU_1 and DMU_4 is 4:5. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can understand that DMU_5 is close to DMU_4 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+For DMU_6 the inefficiency is 1 - 0.7273 = 0.2727, which is almost 27%. DMU_6 can reduce this inefficiency by learning from the peers DMU_1 and DMU_2. 6' does not lie at the middle point of DMU_1 and DMU_2 so, the ratio that divides the line joining DMU_1 and DMU_2 is 14:15. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can observe that DMU_6 is close to DMU_2 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+For DMU_3 the inefficiency is 1 - 0.8793 = 0.1207, which is almost 12%. DMU_3 can reduce this inefficiency by learning from the peers DMU_1 and DMU_4. 3' does not lie at the middle point of DMU_1 and DMU_4 so, the ratio that divides the line joining DMU_1 and DMU_4 is 40:11. The lambda values represent the degree to which a particular DMU learns from its peers. One thing to note over here is that when 'the value of lambda is higher than 1, the inefficient DMU would be closer to the efficient DMU and learns more than 100% efficiency from it. Therefore, from the calculated lambda values we can understand that DMU_3 is close to DMU_1 and learns more than from it and learns a little less from DMU_4 since it is farther away from it.
+
+##### 3. Decreasing Returns to Scale
+```{r}
+tab <- matrix(c("DMU_1","DMU_2","DMU_3","DMU_4","DMU_5","DMU_6",
+                1.0000, 1.0000, 1.0000, 1.0000, 0.8942, 0.7048, 
+                1,2,3,4,1,1,
+                NA,NA,NA,NA,4,2,
+                1.00,0.00,0.00,0.00,0.26,0.22,
+                0.00,1.00,0.00,0.00,0.00,0.71,
+                0,0,1,0,0,0,
+                0.00,0.00,0.00,1.00,0.57,0.00), ncol = 6, byrow = TRUE)
+df <- data.frame(t(tab))
+colnames(df) <- c("Decision Making Units","Efficiency","DRS_Peer_1", "DRS_Peer_2", "DRS_Lambda_A", "DRS_Lambda_B", "DRS_Lambda_C", "DRS_Lambda_D")
+styled_table <- kable(df, format = "html", escape = FALSE, booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(1, extra_css = "border-bottom: 1px dotted;")
+styled_table
+```
+
+Here, we can observe that DMU 1, 2, 3 and 4 have an efficiency of 1, which means that they have attained the maximum capacity and the DMU 5,6 are inefficient as they have not yet reached the maximum attainable capacity. 
+
+For DMU_5 the inefficiency is 1 - 0.8942 = 0.1058, which is almost 11%. DMU_5 can reduce this inefficiency by learning from the peers DMU_1 and DMU_4. 5' does not lie at the middle point of DMU_1 and DMU_4 so, the ratio that divides the line joining DMU_1 and DMU_4 is 4:5. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can observe that DMU_5 is close to DMU_4 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+For DMU_6 the inefficiency is 1 - 0.7048 = 0.2952, which is almost 30%. DMU_6 can reduce this inefficiency by learning from the peers DMU_1 and DMU_2. 6' does not lie at the middle point of DMU_1 and DMU_2 so, the ratio that divides the line joining DMU_1 and DMU_2 is 14:15. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can understand that DMU_6 is close to DMU_2 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+##### 4. Varying Returns to Scale
+```{r}
+tab <- matrix(c("DMU_1","DMU_2","DMU_3","DMU_4","DMU_5","DMU_6",
+                1.0000, 1.0000, 1.0000, 1.0000, 0.9239, 0.7273,
+                1,2,3,4,1,1,
+                NA,NA,NA,NA,4,2,
+                1.00,0.00,0.00,0.00,0.44,0.30,
+                0.00,1.00,0.00,0.00,0.00,0.7,
+                0,0,1,0,0,0,
+                0.00,0.00,0.00,1.00,0.56,0.00), ncol = 6, byrow = TRUE)
+df <- data.frame(t(tab))
+colnames(df) <- c("Decision Making Units","Efficiency", "VRS_Peer_1", "VRS_Peer_2", "VRS_Lambda_A", "VRS_Lambda_B", "VRS_Lambda_C", "VRS_Lambda_D")
+styled_table <- kable(df, format = "html", escape = FALSE, booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(1, extra_css = "border-bottom: 1px dotted;")
+styled_table
+```
+Here, we can observe that DMU 1, 2, 3 and 4 have an efficiency of 1, which means that they have attained the maximum capacity and the DMU 5,6 are inefficient as they have not yet reached the maximum attainable capacity. 
+
+For DMU_5 the inefficiency is 1 - 0.9239 = 0.0761, which is almost 8%. DMU_5 can reduce this inefficiency by learning from the peers DMU_1 and DMU_4. 5' does not lie at the middle point of DMU_1 and DMU_4 so, the ratio that divides the line joining DMU_1 and DMU_4 is 4:5. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can understand that DMU_5 is close to DMU_4 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+For DMU_6 the inefficiency is 1 - 0.7273 = 0.2727, which is almost 27%. DMU_6 can reduce this inefficiency by learning from the peers DMU_1 and DMU_2. 6' does not lie at the middle point of DMU_1 and DMU_2 so, the ratio that divides the line joining DMU_1 and DMU_2 is 14:15. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can observe that DMU_6 is close to DMU_2 and learns more from it and learns a little less from DMU_1 since it is farther away from it.
+
+##### 5. Free Disposal Hall & Free Replicable Hall
+```{r}
+tab <- matrix(c("DMU_1","DMU_2","DMU_3","DMU_4","DMU_5","DMU_6",
+                 1.0000, 1.0000, 1.0000, 1.0000, 1.0000, 0.8824,
+                 1,2,3,4,5,2,
+                 1,0,0,0,0,0,
+                 0,1,0,0,0,1,
+                 0,0,1,0,0,0,
+                 0,0,0,1,0,0,
+                 0,0,0,0,1,0), ncol = 6, byrow = TRUE)
+df <- data.frame(t(tab))
+colnames(df) <- c("Decision Making Units","Efficiency", "FDH&FRH_Peer1", "FDH&FRH-L_A", "FDH&FRH-L_B", "FDH&FRH-L_C", "FDH&FRH-L_D", "FDH&FRH-L_E")
+styled_table <- kable(df, format = "html", escape = FALSE, booktabs = TRUE) %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(1, extra_css = "border-bottom: 1px dotted;")
+styled_table
+```
+Here, we can observe that DMU 1, 2, 3, 4 and 5 have an efficiency of 1, which means that they have attained the maximum capacity and the DMU 6 are inefficient as they have not yet reached the maximum attainable capacity. 
+
+For DMU_6 the inefficiency is 1 - 0.8824 = 0.1176, which is almost 12%. DMU_6 can reduce this inefficiency by learning from peer DMU_2. The lambda values represent the degree to which a particular DMU learns from its peers. Therefore, from the calculated lambda values we can interpret that DMU_6 is doing 100% learning from DMU_2.
+

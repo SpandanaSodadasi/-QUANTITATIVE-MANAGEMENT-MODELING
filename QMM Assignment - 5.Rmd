@@ -1,0 +1,226 @@
+---
+title: "QMM Assignment-5"
+author: "Spandana Sodadasi"
+date: "2023-11-04"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
+```
+
+#### Problem Statement:-
+
+The Research and Development Division of the Emax Corporation has developed three new products. A decision now needs to be made on which mix of these products should be produced.Management wants primary consideration given to three factors: total profit, stability in the workforce, and achieving an increase in the company’s earnings next year from the $60 million achieved this year. In particular, using the units given in the following table, they want to Maximize Z = P - 5C - 2D,                                                                                 
+where:                                                                                  
+P = total (discounted) profit over the life of the new products,                                                  
+C = change (in either direction) in the current level of employment,                                              
+D = decrease (if any) in next year’s earnings from the current year’s level.                                      
+The amount of any increase in earnings does not enter into Z, because management is concerned primarily with just achieving some increase to keep the stockholders happy. (It has mixed feelings about a large increase that then would be difficult to surpass in subsequent years.)                                                               
+The impact of each of the new products (per unit rate of production) on each of these factors is shown in the    following table:
+```{r}
+library(kableExtra)
+df <- data.frame(
+  Factor = c("Total Profit", "Employment Level", "Earning Next Year"),
+  x_1 = c(15, 8, 6),
+  x_2 = c(12, 6, 5),
+  x_3 = c(20, 5, 4),
+  Goal = c("Maximize", "= 70", ">= 60"),
+  Units = c("Millions of dollars", "Hundred of workers", "Millions of dollars"),
+  Penalty = c("--", "5(+), 5(-)", "2(-)")
+)
+df %>%
+ kable(align = "c", format = "html") %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(0, bold = TRUE) %>%
+  add_header_above(c(" " = 1, "Products" = 3, " " = 1, " " = 1,  " " = 1)) %>%
+  add_header_above(c(" " = 1, "Unit Contribution" = 3,  " " = 1, " " = 1,  " " = 1))
+```
+
+
+
+#### Summary:-
+
+##### 1. Define \(y_1^+ \hspace0.2 cm and \hspace0.2 cm y_1^-\), respectively, as the amount over (if any) and the amount under (if any) the employment level goal. Define \(y_2^+ \hspace0.2 cm and \hspace0.2 cm y_2^-\) in the same way for the goal regarding earnings next year. Define \(x_1, x_2, \hspace0.2 cm and \hspace0.2 cm x_3\) as the production rates of Products 1, 2, and 3, respectively. With these definitions, use the goal programming technique to express \(y_1^+, y_1^- , y_2^+ \hspace0.2 cm and \hspace0.2 cm y_2^-\) algebraically in terms of \(x_1, x_2, \hspace0.2 cm and \hspace0.2 cm x_3\). Also, express P in terms of \(x_1, x_2, \hspace0.2 cm and \hspace0.2 cm x_3\).
+
+We have production rates of the first, second and the third goods as \(x_1,x_2\) and \(x_3\). Then We can write constraints in terms of these products as below:                                                                  
+
+$$ 8x_1 + 6x_2 + 5x_3 = 70 $$
+$$ 6x_1 + 5x_2 + 4x_3 \ge 60 $$
+We can write these two constraints in deviation form as below:
+
+$$ y_1 = 8x_1 + 6x_2 + 5x_3 - 70 $$
+$$ y_2 = 6x_1 + 5x_2 + 4x_3 - 60 $$
+Where, actual employment level = \(8x_1 + 6x_2 + 5x_3\)  and minimum profit requirement = 70. So, could be positive, negative or zero depending on whether positive or negative part is greater. Similar explanation applies the other constraint as well.                                                                                     
+
+Let’s define \(y_i = y_i^+ - y_i^-\)
+
+That is,                                                                                                          
+\(y_1 = y_1^+ - y_1^-\)
+
+\(y_2 = y_2^+ - y_2^-\)
+
+Where,                                                                                                            
+\(y_1^+\) is a positive deviation or over achievement of employment level.
+
+\(y_1^-\) is a negative deviation or under achievement of employment level.
+
+\(y_2^+\) is a positive deviation or over achievement of earning for next year.
+
+\(y_2^-\) is a negative deviation or under achievement of earning for next year.
+
+Then we can write the above three constraints as:
+$$ y_1^+ - y_1^- = 8x_1 + 6x_2 + 5x_3 - 70 $$
+$$ y_2^+ - y_2^- = 6x_1 + 5x_2 + 4x_3 - 60 $$
+Some simple math yields:                                                                                          
+$$  8x_1 + 6x_2 + 5x_3-(y_1^+ - y_1^-) = 70 $$
+$$  6x_1 + 5x_2 + 4x_3- (y_2^+ - y_2^-) = 60 $$
+
+Expressing P in terms of \(x_1, x_2, \hspace0.2cm and \hspace0.2cm x_3\):-                                                                      
+According to the problem statement P is the total (discounted) profit over the life of the new products, So it can expressed as follows,
+       $$ P=15x_1+12x_2+20x_3 $$
+$$where \hspace0.2 cm x_1, x_2, \hspace0.2cm and \hspace0.2cm x_3 \hspace0.2 cm are \hspace0.2 cm the \hspace0.2 cm production \hspace0.2 cm rates \hspace0.2 cm of \hspace0.2 cm the \hspace0.2cm product \hspace0.2 cm 1, \hspace0.2 cm 2 \hspace0.2 cm and \hspace0.2 cm 3.$$
+
+##### 2. Express management’s objective function in terms of \(x_1, x_2, x_3, y_1^+, y_1^- , y_2^+ \hspace0.2 cm and \hspace0.2 cm y_2^-\).
+
+Our 'Objective function' here is to maximize the deviation from the goal. The goal is to maximize the profit, maintain stable employment level with hundreds of workers at 70 and the earning for next year of 60 million dollars. So, If deviated earning for next year is something below 60, then there would be a penalty of 2 for each million decrease in earnings. But there would be no penalty for increment in earning (an upper bound one sided earning constraint).                                                                                              
+
+Therefore, the total penalty from Earning Deviation = \(2y_2^-\).
+
+Similarly, the total penalty from Employment Deviation = \(5y_1^+ + 5y_1^-\).
+
+So, the Total Penalty \(PEN\) = \(5y_1^+ + 5y_1^- +0y_2^+ +2y_2^-\)
+
+As we already have objective function given in the question we just need to insert the appropriate values into it, to formulate the required Objective function which is as follows,
+
+$$ Maximize \hspace0.2cm Z = 15x_1+12x_2+20x_3-5y_1^+ - 5y_1^-  -0y_2^+ -2y_2^- $$
+
+##### 3. (a) Formulate the linear programming model. 
+
+Mathematical formulation of the goal programming in this particular case is as follows,
+
+Objective function:
+
+$$ Maximize \hspace0.2cm Z = 15x_1+12x_2+20x_3-5y_1^+ - 5y_1^-  -0y_2^+ -2y_2^- $$
+
+Constraints:
+
+$$  8x_1 + 6x_2 + 5x_3-(y_1^+ - y_1^-) = 70 $$
+$$  6x_1 + 5x_2 + 4x_3- (y_2^+ - y_2^-) = 60 $$
+
+Non-negativity of the decision variables:
+
+$$ x_1 ≥ 0, x_2 ≥ 0, x_3 ≥ 0, y_1^+ ≥ 0, y_1^- ≥ 0, y_2^+ ≥ 0, y_2^- ≥ 0 $$
+
+##### (b) Solve the linear programming model. 
+
+#Loading the required libraries.
+```{r}
+library(lpSolveAPI)
+```
+
+#Creating an Linear Programming problem instance with 2 constraints and 7 decision variables.
+```{r}
+lprec <-make.lp(2,7)
+```
+
+#Setting the objective function coefficients for the 7 decision variables. 
+```{r}
+set.objfn(lprec, c(15,12,20,-5,-5,0,-2))
+```
+
+In this case, the coefficients are provided as a vector. 
+
+#Setting the Objective sense to ‘max’.
+```{r}
+lp.control(lprec, sense = "max")
+```
+
+#Adding the constraints to the LP problem. 
+```{r}
+set.row(lprec,1,c(8,6,5,-1,-1,0,0),  indices = c(1,2,3,4,5,6,7))
+set.row(lprec,2,c(6,5,4,0,0,-1,-1),  indices = c(1,2,3,4,5,6,7))
+```
+
+#Creating a vector rhs containing the right-hand side values for the two constraints.
+```{r}
+rhs<-c(70,60)
+```
+
+#Setting the right-hand side values for the constraints in the LP problem.
+```{r}
+set.rhs(lprec,rhs)
+```
+
+#Setting the constraint types for the two constraints. 
+```{r}
+set.constr.type(lprec,c("=","="))
+```
+
+In this case, they are all set to equality (‘=’).
+
+#Setting the lower bounds for the 7 decision variables. The lower bounds are set to zero in this case (non-negativity of the decision variables).
+```{r}
+set.bounds(lprec,lower = rep(0,7))
+```
+
+#Assigning names to the constraints.
+```{r}
+lp.rownames<-c("Employment Level","Earning Next Year")
+```
+
+#Assigning names to the seven decision variables where p stands for plus and m for minus.
+```{r}
+lp.colnames <-c("x1","x2","x3","y1p","y1m","y2p","y2m")
+```
+
+#Solving the LP problem using the specified constraints and objective function.
+```{r}
+solve(lprec)
+```
+
+#Retrieving the optimal objective value of the LP problem.
+```{r}
+get.objective(lprec)
+```
+
+#Retrieving the values of the decision variables at the optimal solution.
+```{r}
+get.variables(lprec)
+```
+
+##### (c) What are your findings?
+
+Here are the findings for the goal programming problem:
+
+The LP problem was successfully solved using the specified constraints and objective function.
+
+The optimal objective value of the LP problem is \(275\).
+
+The values of the decision variables at the optimal solution are as follows,
+
+\(x_1 = 0\)
+
+\(x_2 = 0\)
+
+\(x_3 = 15\)
+
+\(y_1^+ = 5\)
+
+\(y_1^- = 0\)
+
+\(y_2^+ = 0\)
+
+\(y_2^- = 0\)
+
+These findings represent the optimal solution to the goal programming problem. The values of the decision variables provide insights into the recommended production levels and deviations from the goals for each factor,
+taking into account the defined constraints and penalties. In this solution, the objective was to minimize the
+deviations from the goals while considering the associated penalties.
+
+It appears that only (\(y_1^+\)) has a non-zero value, which means there is a positive deviation associated with the goal for employment (\(y_1\)). To calculate the penalty associated with (\(y_1^+\)), we need to know the associated penalty coefficient, which is 5 based on the code.
+
+So, the penalty for the positive deviation in employment (\(y_1^+\)) is: Penalty \(5 * 5 = 25\).
+
+The penalty for other factors (\(y_1^-\),\(y_2^+ \hspace0.2cm and \hspace0.2cm y_2^-\)) is zero because their associated variables have zero values in the optimal solution.
+
+Therefore, the penalty for the goal programming problem is approximately \(25\) and it is associated with the positive deviation in employment (\(y_1^+\)).

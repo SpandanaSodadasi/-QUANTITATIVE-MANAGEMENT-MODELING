@@ -1,0 +1,210 @@
+---
+title: "QMM_Assignment-6"
+author: "Spandana Sodadasi"
+date: "2023-11-18"
+output: html_document
+---
+
+```{r setup, include=TRUE}
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
+```
+
+AP is a shipping service that guarantees overnight delivery of packages in the continental US. The company has various hubs at major cities and airports across the country. Packages are received at hubs, and then shipped to intermediate hubs or to their destination. The manager of the AP hub in Cleveland is concerned about labor costs and is interested in determining the most effective way to schedule workers. The hub operates seven days a week, and the number of packages it handles varies from one day to another. The table below provides an estimate of the number of workers needed each day of the week.
+
+```{r}
+library(kableExtra, warn.conflicts = FALSE)
+data_1 <- data.frame(Day = c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"),
+                     Workers_Required = c(20,25,22,28,25,22,20))
+
+data_1 %>%
+ kable(align = "c", format = "html") %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(0, bold = TRUE) 
+```
+
+Package handlers at AP are guaranteed a five-day work week with two consecutive days off. The base wage for the handlers is 750 dollar per week. Workers working on Saturday or Sunday receive an additional 20 dollar per day. The possible shifts and salaries for package handlers are:
+
+```{r}
+data_2 <- data.frame(Shift = c(1,2,3,4,5,6,7), 
+                     Days_Off = c("Sunday and Monday","Monday and Tuesday",
+                                  "Tuesday and Wednesday","Wednesday and Thursday",
+                                  "Thursday and Friday","Friday and Saturday",
+                                  "Saturday and Sunday"),
+                     Wage = c(770,790,790,790,790,770,750))
+data_2 %>%
+ kable(align = "c", format = "html") %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(0, bold = TRUE) 
+```
+
+The manager wants to keep the total wage expenses as low as possible while ensuring that there are sufficient number of workers available each day.
+
+***
+
+1.Formulate the problem.
+
+Before getting into the formulation we first need to define the decision variables which is discussed as follows,
+
+$$w_1 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 1$$
+
+$$w_2 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 2$$
+
+$$w_3 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 3$$
+
+$$w_4 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 4$$
+
+$$w_5 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 5$$
+
+$$w_6 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 6$$
+
+$$w_7 = Number \hspace{0.2cm} of \hspace{0.2cm} workers \hspace{0.2cm} assigned \hspace{0.2cm} to \hspace{0.2cm} Shift \hspace{0.2cm} 7$$
+
+##### Objective Function: 
+
+It is given that the manager wants to minimize the total wage expense as low as possible while ensuring that there are sufficient number of workers available each day, so by adjusting the decision variables we can control the labor cost. Therefore, our objective function can be formulated as follows,
+
+\[Min \hspace{0.2cm} TW = 770w_{1} + 790w_{2}+ 790w_{3}+ 790w_{4}+ 790w_{5}+ 770w_{6}+ 750w_{7}\]
+
+##### Constraints: 
+
+Formulating the constraints for all the days in the week basing on the seven decision variables. 
+
+$$Sunday: w_{2} + w_{3} + w_{4} + w_{5} + w_{6}\ge 20 $$                                                         
+
+$$Monday: w_{3} + w_{4} + w_{5} + w_{6} + w_{7}\ge 25 $$                                                    
+
+$$Tuesday: w_{1} + w_{4} + w_{5} + w_{6} + w_{7}\ge 22 $$
+
+$$Wednesday: w_{1} + w_{2} + w_{5} + w_{6} + w_{7}\ge 28 $$
+
+$$Thursday: w_{1} + w_{2} + w_{3} + w_{6} + w_{7}\ge 25 $$
+
+$$Friday: w_{1} + w_{2} + w_{3} + w_{4} + w_{7}\ge 22 $$
+
+$$Saturday: w_{1} + w_{2} + w_{3} + w_{4} + w_{5}\ge 20 $$
+
+##### Non-negativity of the decision variables:
+
+\[w_{1}\ge 0,  \hspace{0.2cm} w_{2}\ge 0,  \hspace{0.2cm} w_{3}\ge 0, \hspace{0.2cm} w_{4}\ge 0, \hspace{0.2cm} w_{5}\ge 0, \hspace{0.2cm} w_{6}\ge 0, \hspace{0.2cm} w_{7}\ge 0 \]
+
+2.Solve the problem in R markdown.
+
+#Loading the required libraries.
+```{r}
+library(lpSolveAPI)
+```
+
+#Creating an Linear Programming problem instance with 7 constraints and 7 decision variables.
+```{r}
+lp <-make.lp(7,7)
+```
+
+#Setting the objective function coefficients for the 7 decision variables.
+```{r}
+set.objfn(lp, c(770, 790, 790, 790, 790, 770, 750))
+```
+
+#Setting the Objective sense to ‘min’.
+```{r}
+lp.control(lp, sense = "min")
+```
+
+#Adding the constraints to the LP problem. 
+```{r}
+set.row(lp,1,c(0,1,1,1,1,1,0))
+set.row(lp,2,c(0,0,1,1,1,1,1)) 
+set.row(lp,3,c(1,0,0,1,1,1,1))
+set.row(lp,4,c(1,1,0,0,1,1,1)) 
+set.row(lp,5,c(1,1,1,0,0,1,1))
+set.row(lp,6,c(1,1,1,1,0,0,1)) 
+set.row(lp,7,c(1,1,1,1,1,0,0))
+```
+
+#Creating a vector rhs containing the right-hand side values for the two constraints.
+```{r}
+rhs<-c(20,25,22,28,25,22,20)
+```
+
+#Setting the right-hand side values for the constraints in the LP problem.
+```{r}
+set.rhs(lp,rhs)
+```
+
+#Setting the constraint types for the two constraints. 
+```{r}
+set.constr.type(lp,c(">=",">=",">=",">=",">=",">=",">="))
+
+```
+
+#Setting the lower bounds for the 7 decision variables. The lower bounds are set to zero in this case (non-negativity of the decision variables).
+```{r}
+set.bounds(lp,lower = rep(0,7))
+```
+
+#Assigning names to the constraints.
+```{r}
+lp.rownames<-c("Sunday","Monday","Tuesday", "Wednesday", "Thursday", "Friday", "Saturday")
+dimnames(lp) = list(lp.rownames,(1:7))
+```
+
+#Setting type for all the variables to 'integer'.
+```{r}
+set.type(lp, columns = 1:7, type = "integer")
+lp
+```
+
+
+#Solving the LP problem using the specified constraints and objective function.
+```{r}
+solve(lp)
+```
+
+#Retrieving the optimal objective value of the LP problem.
+```{r}
+get.objective(lp) 
+```
+
+#Retrieving the values of the decision variables at the optimal solution.
+```{r}
+get.variables(lp)
+```
+
+The optimal solution is \(Min \hspace{0.2cm} TW = 25550\) with \( w_1 = 2 , w_2 = 6, w_3 = 4 , w_4 = 0, w_5 = 8, w_6 = 2\) and \(w_7 = 11\)
+
+3.Find the total cost and the number of workers available each day.
+
+#Getting the value of the total cost.
+```{r}
+get.objective(lp)
+```
+
+#Finding the total number of workers available each day.
+```{r}
+# Sunday
+sum(get.variables(lp)[c(2,3,4,5,6)])
+# Monday
+sum(get.variables(lp)[c(3,4,5,6,7)])
+# Tuesday
+sum(get.variables(lp)[c(1,4,5,6,7)])
+# Wednesday
+sum(get.variables(lp)[c(1,2,5,6,7)])
+# Thursday
+sum(get.variables(lp)[c(1,2,3,6,7)])
+# Friday
+sum(get.variables(lp)[c(1,2,3,4,7)])
+# Saturday
+sum(get.variables(lp)[c(1,2,3,4,5)])
+```
+
+##### Interpretation:
+```{r}
+data_3 <- data.frame(Day = c("Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"),
+                     Total_number_of_Workers_Available = c(20,25,23,29,25,23,20))
+data_3 %>%
+ kable(align = "c", format = "html") %>%
+  kable_styling(bootstrap_options = "bordered", full_width = TRUE) %>%
+  row_spec(0, bold = TRUE)
+```
+
+We develop an Integer Programming (IP) model to solve this problem where we have specified the decision variables, objective function and constraints. In this process, the decision variables represent the number of workers assigned to each shift. The goal is to minimize the total cost, which encompasses both the base wage and the additional pay for weekend workers. Constraints guarantee that the workforce aligns with the daily requirements and adheres to the shift timetable. Upon solving the Linear Programming, we determined that the minimum total wage is $25,550. The daily availability of workers is determined by the decision variables of the specific shifts they take. For instance, on Sundays, workers are available for shifts 2, 3, 4, 5 and 6 whose decision variable values are 6, 4, 0, 8, 2 which will sum up to 20 hours of contribution to the workforce on the very day, and the same pattern continues for all the days.
+

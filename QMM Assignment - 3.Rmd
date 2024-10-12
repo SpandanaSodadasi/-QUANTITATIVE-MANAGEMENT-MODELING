@@ -1,0 +1,203 @@
+---
+title: "QMM Assignment-3"
+author: "Spandana Sodadasi"
+date: "2023-10-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, comment = NULL)
+```
+
+Heart Start produces automated external defibrillators (AEDs) in each of three different plants
+(A, B and C). The unit production costs and monthly production capacity of the two plants are
+indicated in the table below. The AEDs are sold through three wholesalers. The shipping cost
+from each plant to the warehouse of each wholesaler along with the monthly demand from each
+wholesaler are also indicated in the table. How many AEDs should be produced in each plant,
+and how should they be distributed to each of the three wholesaler warehouses so as to minimize
+the combined cost of production and shipping?
+
+#### Loading the required libraries.
+
+```{r}
+library(knitr)
+library(kableExtra)
+```
+
+#### Creating a table matrix.
+```{r}
+tab<-matrix(c(20,14,25,400,100,
+              12,15,14,300,125,
+              10,12,15,500,150,
+              80,90,70,"--",375),nrow = 4,byrow=TRUE)
+colnames(tab)<-c("Dest 1","Dest 2","Dest 3","Cost of production","Supply")
+rownames(tab)<-c("Source 1","Source 2","Source 3","Demand")
+tab %>%
+  kable() %>%
+  kable_classic()%>%
+  column_spec(2, border_left = TRUE) %>%
+  column_spec(5, border_left = TRUE) %>%
+  column_spec(6, border_left = TRUE) %>%
+  row_spec(3,extra_css = "border-bottom:dotted;")
+```
+
+This is an unbalanced transportation problem where the supply and demand constraints are unequal. To solve the problem, we first need to convert it into the balanced one by creating a dummy variable. We have demand less than the supply, so we create a dummy demand variable (a dummy column) with zero transportation cost and dummy demand quantity. After making these changes the transportation problem will now look like:
+```{r}
+tab<-matrix(c(20,14,25,0,400,100,
+              12,15,14,0,300,125,
+              10,12,15,0,500,150,
+              80,90,70,135,"--",375),nrow = 4,byrow=TRUE)
+colnames(tab)<-c("Dest 1","Dest 2","Dest 3","Dummy Variable", "Cost of production","Supply")
+rownames(tab)<-c("Source 1","Source 2","Source 3","Demand")
+tab %>%
+  kable() %>%
+  kable_classic()%>%
+  column_spec(2, border_left = TRUE) %>%
+  column_spec(6, border_left = TRUE) %>%
+  column_spec(7, border_left = TRUE) %>%
+  row_spec(3,extra_css = "border-bottom:dotted;")
+```
+Now, the values of demand and supply have been balanced, where Demand = Supply = 375.
+
+***
+
+#### 1. Formulating the Transportation Problem.
+
+**Objective function:**
+
+ $$ Min\hspace{.3cm} TC=420x_{11}+414x_{12}+425x_{13}+312x_{21}+315x_{22}+314x_{23}+510x_{31}+512x_{32}+515x_{33} $$
+ 
+**Constraints:**
+ 
+##### Supply Constraints:
+
+Source 1: $$ x_{11} + x_{12} + x_{13} + x_{14} \le 100 $$
+Source 2: $$ x_{21} + x_{22} + x_{23} + x_{24} \le 125 $$
+Source 3: $$ x_{31} + x_{32} + x_{33} + x_{34} \le 150 $$
+
+##### Demand Constraints:
+
+Destination 1: $$ x_{11} + x_{21} + x_{31}  \ge 80 $$
+Destination 2: $$ x_{12}+ x_{22} + x_{32}  \ge 90 $$
+Destination 3: $$ x_{13} + x_{23} + x_{33} \ge 70 $$
+
+**Non-negativity of the decision variables:**
+
+ $$ x_{ij}\ge 0 \hspace{.2cm} where \hspace{.2cm} i = 1,2,3 \hspace{.2cm} j = 1,2,3,4 $$
+ 
+#### Solving the above formulated problem using lpSolve package.
+
+#Loading the lpSolve Package.
+```{r}
+library(lpSolve)
+```
+
+#Setting the Objective function matrix.
+```{r}
+costs <- matrix(c(420,414,425,0,
+                  312,315,314,0,
+                  510,512,515,0),ncol = 4, byrow = TRUE)
+costs
+```
+
+#Setting up constraint inequality signs and right hand side coefficients.
+```{r}
+row.signs <- rep("<=", 3)
+row.rhs <- c(100,125,150)
+
+col.signs <- rep(">=", 4)
+col.rhs <- c(80,90,70,135)
+```
+
+#Run the model.
+```{r}
+lptrans <- lp.transport(costs, "min", row.signs, row.rhs, col.signs, col.rhs)
+```
+
+#Getting the values of the 12 decision variables.
+```{r}
+lptrans$solution
+```
+
+#Getting the value of the Objective function(minimized function).
+```{r}
+lptrans$objval
+```
+
+#### Formulating the Dual problem of the primal transportation model.
+
+Let \(u_i \) and \(v_j\) be the dual variables associated to the two classes of constraints: Supply and Demand constraints. The constants of the right hand side of the primal will become the coefficients of the objective function in the dual. RHS constants of the primal are 100,125,150,80,90,70 and 135. 
+
+The dual objective function is the value addition (VA) for the suppliers. The positive part is what the supplier gets by shipping goods to the demanders and the negative part is the cost of producing goods. The difference is the VA or profit. Thus the dual problem is to maximize VA.
+
+**The Objective function of the Dual:**
+
+$$Max \hspace{.2cm} Z = 80v_{11}-42000+90v_{12}-41400+70v_{13}-42500$$                                                $$\hspace{.8cm} +80v_{21}-39000+90v_{22}-39375+70v_{23}-39250$$                                    $$\hspace{.8cm} +80v_{31}-76500+90v_{32}-76800+70v_{33}-77250$$
+
+**Constraints:**
+
+$$ v_j - u_i \ge c_{ij} $$ 
+
+Source 1 transports goods to three possible destinations.
+$$ v_{11} − u_1 ≥ c_{11} \hspace{.2cm} => \hspace{.2cm} v_1 - 400 \ge 20 \hspace{.2cm} => \hspace{.2cm} v_1 \ge 420 $$
+$$ v_{12} − u_1 ≥ c_{12} \hspace{.2cm} => \hspace{.2cm} v_2 - 400 \ge 14 \hspace{.2cm} => \hspace{.2cm} v_2 \ge 414 $$
+$$ v_{13} − u_1 ≥ c_{13} \hspace{.2cm} => \hspace{.2cm} v_3 - 400 \ge 25 \hspace{.2cm} => \hspace{.2cm} v_3 \ge 425 $$
+
+Source 2 transports goods to three possible destinations.
+$$ v_{21} − u_2 ≥ c_{21} \hspace{.2cm} => \hspace{.2cm} v_1 - 300 \ge 12 \hspace{.2cm} => \hspace{.2cm} v_1 \ge 312 $$
+$$ v_{22} − u_2 ≥ c_{22} \hspace{.2cm} => \hspace{.2cm} v_2 - 300 \ge 15 \hspace{.2cm} => \hspace{.2cm} v_2 \ge 315 $$
+$$ v_{23} − u_2 ≥ c_{23} \hspace{.2cm} => \hspace{.2cm} v_3 - 300 \ge 14 \hspace{.2cm} => \hspace{.2cm} v_3 \ge 314 $$
+
+Source 3 transports goods to three possible destinations.
+$$ v_{31} − u_3 ≥ c_{31} \hspace{.2cm} => \hspace{.2cm} v_1 - 500 \ge 10 \hspace{.2cm} => \hspace{.2cm} v_1 \ge 510 $$
+$$ v_{32} − u_3 ≥ c_{32} \hspace{.2cm} => \hspace{.2cm} v_2 - 500 \ge 12 \hspace{.2cm} => \hspace{.2cm} v_2 \ge 512 $$
+$$ v_{33} − u_3 ≥ c_{33} \hspace{.2cm} => \hspace{.2cm} v_3 - 500 \ge 15 \hspace{.2cm} => \hspace{.2cm} v_3 \ge 515 $$
+
+**Non-negativity of the decision variables:**
+ $$ v_j \ge 0  \hspace{.2cm} for \hspace{.2cm} j = 1,2,3,4 \hspace{.2cm} u_i \ge 0 \hspace{.2cm} for \hspace{.2cm} i = 1,2,3 $$ 
+
+#### Economic Interpretation of the Dual Problem. 
+
+##### 1.\(MR \hspace{.2cm} and \hspace{.2cm} MC\) Relationship:
+Our dual constraint is \(v_j - u_i \ge c_{ij}\).This means \( v_j  \ge c_{ij} + u_i\) . The left side is the per unit revenue received by selling one unit of the product. This is what we call \(MR\)  (Marginal Revenue) in economics. The right side is the per unit cost of making and transporting good. This is called \(MC\)(Marginal Cost). 
+
+In here, we can consider two scenarios which is the short run and long run. In short run we first look into the static situation where \(MR=MC\) this takes place when producer neither increases production nor decreases it. This is what we call equilibrium for profit maximization. The other situation in the short run is the dynamic situation, where either MR is strictly greater than MC i.e., \(MR > MC \) or MR is strictly less than MC i.e., \(MR < MC\), these situations occur when there is a continuous change in the production which means if the production keeps increasing then it would fall in the \(MR > MC \) situation and if the production keeps decreasing then it would fall in the \(MR < MC \) situation. 
+The second scenario would be the long run which is a situation where no matter what changes we make in the production the Marginal Revenue would remain equal to the Marginal Cost.
+
+```{r}
+plot(c(0, 25), c(0, 100), type = "n", xlab = "Quantity", ylab = "Price and Cost", main = "MR & MC Relationship")
+lines(c(0, 25), c(0, 100), col = "black")
+lines(c(0, 25), -c(0, 25) + 75, col = "black")
+# Add point A
+points(5, 20, col = "black", pch = 19)
+text(4.5, 20, "A", pos = 3, col = "black")
+text(20, 80, "D", pos = 3, col = "black")
+text(5, 70, "B", pos = 3, col = "black")
+text(19.5, 55, "C", pos = 3, col = "black")
+text(15, 60, "E", pos = 3, col = "black")
+text(8, 75, "MR Line", col = "black")
+text(8,20, "MC Line", col = "black")
+points_data <- data.frame(x = c(5, 20, 5, 20, 15), y = c(20, 80, 70, 55, 60))
+points(points_data$x, points_data$y, col = "black", pch = 19)
+intersection_x <- 15
+intersection_y <- 60  
+points(intersection_x, intersection_y, col = "black", pch = 19)
+for (i in 1:nrow(points_data)) {segments(x0 = points_data$x[i], y0 = points_data$y[i], x1 = points_data$x[i], y1 = 0, col = "gray", lty = 3)}
+axis(1, at = c(5, 20, 15), labels = FALSE)
+```
+
+Lets understand it using a simple plot that shows MC and MR relationship. In the plot we can clearly see that, when the quantity is 5 units, the marginal cost "A" is at 20 but the marginal revenue "B" is at 75 , which means profit is more than the cost and this difference motivates the producer to increase the production of the product until he reaches the point "E" which is the equilibrium. This is the situation where \(MR>MC\). On contrary to this when the quantity is 20 units, the marginal cost "C" is at 80 but the marginal revenue "D" is at 55 , which means cost is more than the profit and this takes place when the producer keeps on increasing the production even after reaching the equilibrium point. The equilibrium point "E" where the quantity is 15 units s the point where the profit or revenue is equal to the cost i.e., \(MR=MR=60\). This is equilibrium point for profit maximization.
+
+In our problem, while formulating the dual as we were more concerned about maximizing the profit, the MR and MC relationship would be \(MR \ge MC\), which means at any production level to the left of the intersection the MR is more than MC but the profit doesn't get maximized. So, the producer should increase the production as it would increase the total profit while moving towards the equilibrium. So, our problem fall between Q1 and Q2 as discussed in the class.
+
+##### 2.Hiring or not hiring shipping company for shipping goods:
+In here we have two scenarios, where \( v_j - u_i > c_{ij} \) which means that the supplier will himself directly supplies goods from the source to the destination and the other scenario is when \( v_j - u_i \le c_{ij} \) where the supplier finds any other shipping company who is able to transport goods from the source to the destination. 
+In real life the ideal situation would be the second scenario where the supplier hires a shipping company to transport the goods from the source to the destination. Hence assuming that in the problem as well the supplier would do same.
+
+
+
+
+ 
+ 
+ 
+
